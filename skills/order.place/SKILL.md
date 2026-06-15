@@ -1,6 +1,6 @@
 ---
 name: order.place
-description: Place an Amazon order. Returns price, order ID, and a Pharos USDC wallet for the buyer to fund.
+description: Place an Amazon or eBay order from a product link. Returns price, order ID, and a Pharos USDC wallet for the buyer to fund.
 metadata:
   type: skill
 ---
@@ -12,9 +12,8 @@ receive a one-time wallet address for payment.
 
 ## When to use
 
-Only after the **user has picked a specific product**. You must have a concrete
-Amazon or eBay `product_url` - either one the user selected from `product.search`
-results, or a direct Amazon/eBay link they gave you. A `product_url` is
+Only after the **user has given a specific product**. You must have a concrete
+Amazon or eBay `product_url` - a direct link the user provided. A `product_url` is
 **required**; the order is locked in to that exact item. Never guess or auto-pick.
 
 ## Step 1 - Place order
