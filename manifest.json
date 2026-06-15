@@ -1,0 +1,16 @@
+{
+  "name": "zedkr",
+  "version": "0.2.0",
+  "kind": "skill-pack",
+  "runtime": "pharos",
+  "description": "Buy real products from Amazon and eBay. Search, place order, user pays USDC on Pharos - no wallet UX.",
+  "api_base": "https://<your-app>.up.railway.app",
+  "skills": [
+    { "name": "product.search", "path": "skills/product.search/SKILL.md", "endpoint": "POST /v1/search" },
+    { "name": "order.place", "path": "skills/order.place/SKILL.md", "endpoint": "POST /v1/place-order, GET /v1/checkout/:id" }
+  ],
+  "pipeline": [
+    "product.search",
+    "order.place"
+  ]
+}
