@@ -1,27 +1,28 @@
 # Zedkr
 
-An agent skill for buying physical products with stablecoin.
+**Buy real products with an AI agent and pay in USDC on Pharos.**
 
-Give it an Amazon or eBay product link and a shipping address. It quotes the price
-and hands back a one-time Pharos wallet. Fund that wallet with USDC and the order
-is placed with the retailer and shipped to the address.
+Zedkr is an agent skill that turns stablecoins into physical products. You give an
+agent a product link from Amazon or eBay and a shipping address. The agent pays in
+USDC on Pharos, and the item is bought and shipped to the door. No browser wallet,
+no card, no checkout page.
 
-This repo is a **skill pack** — markdown an AI agent reads to learn how to call the
-Zedkr API. There's no SDK and nothing to install; the agent reads `SKILL.md` and
-makes plain HTTP requests. One skill: `order.place`.
+This repo is a **skill pack**: plain markdown an AI agent reads to learn how to call
+the Zedkr API. There is no SDK and nothing to install. The agent reads `SKILL.md`
+and makes plain HTTP requests. One skill: `order.place`.
 
-## The skill: `order.place`
+## The skill: order.place
 
 | Call | Purpose |
 |------|---------|
-| `POST {api_base}/v1/place-order` | quote a product link + get a wallet to pay |
-| `GET {api_base}/v1/checkout/{id}` | poll until the order is placed |
+| `POST {api_base}/v1/place-order` | quote a product link and get a wallet to pay |
+| `GET {api_base}/v1/checkout/{id}` | report status until the order is placed |
 
-`api_base` is set in [`manifest.json`](manifest.json) — currently
-`https://zedkr.up.railway.app`. Full request/response shapes are in
+`api_base` is set in [`manifest.json`](manifest.json), currently
+`https://zedkr.up.railway.app`. Full request and response shapes live in
 [`skills/order.place/SKILL.md`](skills/order.place/SKILL.md).
 
-## What a call actually looks like
+## What a call looks like
 
 Place an order:
 
@@ -49,39 +50,38 @@ Response:
   "shipping_amount": 0,
   "total_amount": 808,
   "wallet": {
-    "checkout_id": "001ac29c-f1c1-4b99-b19f-520599b4f1e7",
-    "funding_address": "0x0fF323d44AFE4cd9f47c98F6c8edafeF6C19280B",
+    "funding_address": "0x23f3cE44065f400E9818C19E126D5c044aFC6cdc",
     "network": "pharos",
     "asset": "USDC",
     "amount": 808,
-    "expires_at": "2026-06-15T15:25:27Z",
     "status": "awaiting_funds"
   }
 }
 ```
 
-Send `808` USDC on Pharos to that address, then poll the checkout:
+Send the `amount` of USDC on Pharos to `funding_address`, then poll the checkout:
 
 ```bash
-curl https://zedkr.up.railway.app/v1/checkout/001ac29c-f1c1-4b99-b19f-520599b4f1e7
-# { "status": "awaiting_funds" }   ->   { "status": "paid", "order_number": "..." }
+curl https://zedkr.up.railway.app/v1/checkout/{checkout_id}
+# status goes awaiting_funds, then paid
 ```
 
 When `status` becomes `paid`, the order has been placed with the retailer.
 
 ## How it works
 
-- **You provide the exact product** (a direct link), so there's no guessing — that
-  item is what gets ordered.
-- **Payment is USDC on Pharos.** Each order gets a fresh single-use address;
-  nothing is charged until you send funds to it.
-- **The order is placed only after payment is confirmed** — not before.
+- **You provide the exact product** as a direct link, so there is never any
+  guessing about what gets ordered.
+- **Payment is USDC on Pharos.** Each order gets a fresh wallet used only once,
+  and nothing is charged until you send funds to it.
+- **The order is placed only after the payment is confirmed**, settled onchain
+  through the x402 payment protocol on the backend.
 - `customer_email` and `shipping_address.phone` are required by the retailer.
-- One product per link. A quote/wallet expires after ~30 minutes; request a new one
+- One product per link. A quote expires after about 30 minutes; request a new one
   if it lapses.
 
 ## Notes
 
-Built for the Pharos Skill-to-Agent hackathon. The backend runs separately (it
-handles the retailer integration and on-chain settlement); this repo is only the
+Built for the Pharos Skill to Agent hackathon. The backend runs separately and
+handles the retailer integration and onchain settlement; this repo is only the
 skill contract an agent needs to use it.
